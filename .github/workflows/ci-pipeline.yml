@@ -102,6 +102,12 @@ jobs:
         pip install -r requirements.txt
         pip install flake8 pylint pylint-django
         
+    - name: Create env file
+      working-directory: ./devsu-demo-devops-python
+      run: |
+        echo "DJANGO_SECRET_KEY=${{ secrets.DJANGO_SECRET_KEY }}" >> .env
+        echo "DATABASE_NAME=${{ secrets.DATABASE_NAME }}" >> .env
+        
     - name: Create flake8 config
       working-directory: ./devsu-demo-devops-python
       run: |
@@ -116,6 +122,9 @@ jobs:
         
     - name: Run pylint
       working-directory: ./devsu-demo-devops-python
+      env:
+        DJANGO_SECRET_KEY: ${{ secrets.DJANGO_SECRET_KEY }}
+        DATABASE_NAME: ${{ secrets.DATABASE_NAME }}
       run: |
         pylint --load-plugins=pylint_django \
                --django-settings-module=demo.settings \
