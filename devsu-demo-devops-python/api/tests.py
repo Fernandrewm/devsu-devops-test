@@ -1,9 +1,15 @@
+# Standard library imports
 import json
-from django.urls import reverse
-from rest_framework.test import APITestCase
-from .models import User
+
+# Django imports
 from django.test import TestCase
-from rest_framework.test import APIClient
+from django.urls import reverse
+
+# Third party imports
+from rest_framework.test import APIClient, APITestCase
+
+# Local imports
+from .models import User
 
 
 class TestUserView(APITestCase):

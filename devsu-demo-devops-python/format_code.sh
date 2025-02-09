@@ -1,10 +1,14 @@
 #!/bin/bash
 
-# Instalar black
-echo "Instalando black..."
-pip install black
+# Instalar herramientas de formateo
+echo "Instalando herramientas..."
+pip install black isort
 
-# Aplicar black con la configuración que coincide con nuestro pipeline
+# Ordenar imports
+echo "Ordenando imports..."
+isort api/ demo/ --profile black --line-length 120
+
+# Formatear código
 echo "Formateando código..."
 black --line-length 120 api/ demo/
 
