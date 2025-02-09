@@ -26,8 +26,17 @@ jobs:
         pip install -r requirements.txt
         pip install coverage pytest
         
+    - name: Create env file
+      working-directory: ./devsu-demo-devops-python
+      run: |
+        echo "DJANGO_SECRET_KEY=${{ secrets.DJANGO_SECRET_KEY }}" >> .env
+        echo "DATABASE_NAME=${{ secrets.DATABASE_NAME }}" >> .env
+        
     - name: Run tests with coverage
       working-directory: ./devsu-demo-devops-python
+      env:
+        DJANGO_SECRET_KEY: ${{ secrets.DJANGO_SECRET_KEY }}
+        DATABASE_NAME: ${{ secrets.DATABASE_NAME }}
       run: |
         coverage run manage.py test
         coverage report > coverage_report.txt
