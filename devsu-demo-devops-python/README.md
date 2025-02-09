@@ -8,6 +8,33 @@ This is a simple application to be used in the technical test of DevOps.
 
 - Python 3.11.3
 
+### Installation with Docker
+To execute the application with docker, ensure you have docker and docker compose installed.
+
+1. Create a `.env` file in the root of the application with the following variables:
+```bash
+DJANGO_SECRET_KEY=your_secret_key
+DATABASE_NAME=your_database_name
+```
+
+2. Build and run the container:
+```bash
+docker-compose up --build
+```
+
+3. Access the application at `http://localhost:8000/api/`
+
+4. To stop the container, run:
+```bash
+docker-compose down
+```
+
+#### Notes about Docker
+- The database SQLite is stored in a volume, so it will persist even after the container is stopped.
+- The application include healthcheck to ensure the container is running.
+- The container exposes port 8000.
+- Utilize multi-stage build to reduce the final image size.
+
 ### Installation
 
 Clone this repo.
