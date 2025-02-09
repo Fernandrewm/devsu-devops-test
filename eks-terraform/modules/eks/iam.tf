@@ -24,7 +24,7 @@ resource "aws_iam_role_policy_attachment" "cluster_policies" {
   ])
 
   policy_arn = each.value
-  role = aws_iam_role.cluster_role.name
+  role       = aws_iam_role.cluster_role.name
 }
 
 # Rol needed for the nodes
@@ -55,7 +55,7 @@ resource "aws_iam_role_policy_attachment" "node_group_policies" {
   ])
 
   policy_arn = each.value
-  role = aws_iam_role.node_group.name
+  role       = aws_iam_role.node_group.name
 }
 
 # Policy access to S3
@@ -84,5 +84,5 @@ resource "aws_iam_policy" "s3_access" {
 # Attach the policy to the node group
 resource "aws_iam_role_policy_attachment" "s3_access" {
   policy_arn = aws_iam_policy.s3_access.arn
-  role = aws_iam_role.node_group.name
+  role       = aws_iam_role.node_group.name
 }

@@ -4,9 +4,9 @@ data "tls_certificate" "eks" {
 }
 
 resource "aws_iam_openid_connect_provider" "eks" {
-  client_id_list = ["sts.amazonaws.com"]
+  client_id_list  = ["sts.amazonaws.com"]
   thumbprint_list = [data.tls_certificate.eks.certificates[0].sha1_fingerprint]
-  url = var.cluster_oidc_issuer
+  url             = var.cluster_oidc_issuer
 }
 
 # IAM Role for AWS Load Balancer Controller
@@ -39,16 +39,16 @@ resource "aws_iam_role_policy_attachment" "aws_load_balancer_controller" {
 resource "aws_iam_policy" "aws_load_balancer_controller" {
   name = "${var.project_name}-aws-load-balancer-controller"
 
-policy = jsonencode({
+  policy = jsonencode({
     Version = "2012-10-17"
     Statement = [
       {
-        Effect = "Allow"
-        Action = ["iam:CreateServiceLinkedRole"]
+        Effect   = "Allow"
+        Action   = ["iam:CreateServiceLinkedRole"]
         Resource = "*"
         Condition = {
           StringEquals = {
-            "iam:AWSServiceName": "elasticloadbalancing.amazonaws.com"
+            "iam:AWSServiceName" : "elasticloadbalancing.amazonaws.com"
           }
         }
       },
@@ -117,20 +117,20 @@ policy = jsonencode({
         Resource = "*"
       },
       {
-        Effect = "Allow"
-        Action = ["ec2:CreateSecurityGroup"]
+        Effect   = "Allow"
+        Action   = ["ec2:CreateSecurityGroup"]
         Resource = "*"
       },
       {
-        Effect = "Allow"
-        Action = ["ec2:CreateTags"]
+        Effect   = "Allow"
+        Action   = ["ec2:CreateTags"]
         Resource = "arn:aws:ec2:*:*:security-group/*"
         Condition = {
           StringEquals = {
-            "ec2:CreateAction": "CreateSecurityGroup"
+            "ec2:CreateAction" : "CreateSecurityGroup"
           }
           Null = {
-            "aws:RequestTag/elbv2.k8s.aws/cluster": "false"
+            "aws:RequestTag/elbv2.k8s.aws/cluster" : "false"
           }
         }
       },
@@ -143,8 +143,8 @@ policy = jsonencode({
         Resource = "arn:aws:ec2:*:*:security-group/*"
         Condition = {
           Null = {
-            "aws:RequestTag/elbv2.k8s.aws/cluster": "true"
-            "aws:ResourceTag/elbv2.k8s.aws/cluster": "false"
+            "aws:RequestTag/elbv2.k8s.aws/cluster" : "true"
+            "aws:ResourceTag/elbv2.k8s.aws/cluster" : "false"
           }
         }
       },
@@ -158,7 +158,7 @@ policy = jsonencode({
         Resource = "*"
         Condition = {
           Null = {
-            "aws:ResourceTag/elbv2.k8s.aws/cluster": "false"
+            "aws:ResourceTag/elbv2.k8s.aws/cluster" : "false"
           }
         }
       },
@@ -171,7 +171,7 @@ policy = jsonencode({
         Resource = "*"
         Condition = {
           Null = {
-            "aws:RequestTag/elbv2.k8s.aws/cluster": "false"
+            "aws:RequestTag/elbv2.k8s.aws/cluster" : "false"
           }
         }
       },
@@ -198,8 +198,8 @@ policy = jsonencode({
         ]
         Condition = {
           Null = {
-            "aws:RequestTag/elbv2.k8s.aws/cluster": "true"
-            "aws:ResourceTag/elbv2.k8s.aws/cluster": "false"
+            "aws:RequestTag/elbv2.k8s.aws/cluster" : "true"
+            "aws:ResourceTag/elbv2.k8s.aws/cluster" : "false"
           }
         }
       },
@@ -233,7 +233,7 @@ policy = jsonencode({
         Resource = "*"
         Condition = {
           Null = {
-            "aws:ResourceTag/elbv2.k8s.aws/cluster": "false"
+            "aws:ResourceTag/elbv2.k8s.aws/cluster" : "false"
           }
         }
       },
@@ -247,13 +247,13 @@ policy = jsonencode({
         ]
         Condition = {
           StringEquals = {
-            "elasticloadbalancing:CreateAction": [
+            "elasticloadbalancing:CreateAction" : [
               "CreateTargetGroup",
               "CreateLoadBalancer"
             ]
           }
           Null = {
-            "aws:RequestTag/elbv2.k8s.aws/cluster": "false"
+            "aws:RequestTag/elbv2.k8s.aws/cluster" : "false"
           }
         }
       },
@@ -282,33 +282,33 @@ policy = jsonencode({
 
 # Helm release for AWS Load Balancer Controller
 resource "helm_release" "aws_load_balancer_controller" {
-  name = "aws-load-balancer-controller"
+  name       = "aws-load-balancer-controller"
   repository = "https://aws.github.io/eks-charts"
-  chart = "aws-load-balancer-controller"
-  namespace = "kube-system"
+  chart      = "aws-load-balancer-controller"
+  namespace  = "kube-system"
 
   set {
-    name = "clusterName"
+    name  = "clusterName"
     value = var.cluster_name
   }
 
   set {
-    name = "serviceAccount.annotations.eks\\.amazonaws\\.com/role-arn"
+    name  = "serviceAccount.annotations.eks\\.amazonaws\\.com/role-arn"
     value = aws_iam_role.aws_load_balancer_controller.arn
   }
 
-  depends_on = [ aws_iam_role_policy_attachment.aws_load_balancer_controller ]
+  depends_on = [aws_iam_role_policy_attachment.aws_load_balancer_controller]
 }
 
 resource "helm_release" "nginx_ingress" {
-  name = "nginx-ingress"
-  repository = "https://kubernetes.github.io/ingress-nginx"
-  chart = "ingress-nginx"
-  namespace = "ingress-nginx"
+  name             = "nginx-ingress"
+  repository       = "https://kubernetes.github.io/ingress-nginx"
+  chart            = "ingress-nginx"
+  namespace        = "ingress-nginx"
   create_namespace = true
 
   set {
-    name = "controller.service.type"
+    name  = "controller.service.type"
     value = "ClusterIP"
   }
 
@@ -318,17 +318,17 @@ resource "helm_release" "nginx_ingress" {
     value = "IPv4"
   }
 
-  depends_on = [ helm_release.aws_load_balancer_controller ]
+  depends_on = [helm_release.aws_load_balancer_controller]
 }
 
 resource "kubernetes_ingress_v1" "nginx_ingress_alb" {
   metadata {
-    name = "nginx-ingress-alb"
+    name      = "nginx-ingress-alb"
     namespace = "ingress-nginx"
     annotations = {
-      "alb.ingress.kubernetes.io/scheme" = "internet-facing"
-      "alb.ingress.kubernetes.io/target-type" = "ip"
-      "alb.ingress.kubernetes.io/group.name" = "ingress-alb"
+      "alb.ingress.kubernetes.io/scheme"          = "internet-facing"
+      "alb.ingress.kubernetes.io/target-type"     = "ip"
+      "alb.ingress.kubernetes.io/group.name"      = "ingress-alb"
       "alb.ingress.kubernetes.io/ip-address-type" = "ipv4"
     }
   }
@@ -339,7 +339,7 @@ resource "kubernetes_ingress_v1" "nginx_ingress_alb" {
     rule {
       http {
         path {
-          path = "/"
+          path      = "/"
           path_type = "Prefix"
           backend {
             service {
@@ -354,5 +354,5 @@ resource "kubernetes_ingress_v1" "nginx_ingress_alb" {
     }
   }
 
-  depends_on = [ helm_release.nginx_ingress ]
+  depends_on = [helm_release.nginx_ingress]
 }

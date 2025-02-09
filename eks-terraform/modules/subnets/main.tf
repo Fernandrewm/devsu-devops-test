@@ -8,7 +8,7 @@ resource "aws_subnet" "public" {
 
   tags = merge(
     {
-      Name = "${var.project_name}-public-subnet-${count.index + 1}"
+      Name                     = "${var.project_name}-public-subnet-${count.index + 1}"
       "kubernetes.io/role/elb" = "1"
     },
     var.tags
@@ -23,7 +23,7 @@ resource "aws_subnet" "private" {
 
   tags = merge(
     {
-      Name = "${var.project_name}-private-subnet-${count.index + 1}"
+      Name                              = "${var.project_name}-private-subnet-${count.index + 1}"
       "kubernetes.io/role/internal-elb" = "1"
     },
     var.tags
