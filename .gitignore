@@ -28,6 +28,10 @@ staticfiles/
 venv/
 ENV/
 
+# Docker
+.docker/
+docker-compose.override.yml
+
 # IDE
 .idea/
 .vscode/
