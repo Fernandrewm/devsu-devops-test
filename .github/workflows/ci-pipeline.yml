@@ -9,6 +9,7 @@ on:
     branches: [ "main" ]
     paths:
       - 'devsu-demo-devops-python/**'
+  workflow_dispatch:
 
 permissions:
   contents: read
