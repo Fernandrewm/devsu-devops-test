@@ -76,8 +76,8 @@ WSGI_APPLICATION = "demo.wsgi.application"
 # Database
 # https://docs.djangoproject.com/en/4.2/ref/settings/#databases
 
-# Usar SQLite para pruebas
-if 'test' in sys.argv:
+# Use SQLite for tests and static analysis
+if 'test' in sys.argv or 'pylint' in sys.argv[0]:
     DATABASES = {
         'default': {
             'ENGINE': 'django.db.backends.sqlite3',
