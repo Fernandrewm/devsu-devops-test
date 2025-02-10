@@ -1,54 +1,40 @@
-FROM python:3.11-slim-bookworm as builder
+FROM python:3.11-slim
 
-ENV PYTHONDONTWRITEBYTECODE=1 \
-    PYTHONUNBUFFERED=1 \
-    APP_HOME=/app \
-    USER=appuser \
-    DATA_DIR=/data
+# Establecer variables de entorno
+ENV PYTHONUNBUFFERED=1 \
+    PYTHONDONTWRITEBYTECODE=1 \
+    PIP_NO_CACHE_DIR=off \
+    PIP_DISABLE_PIP_VERSION_CHECK=on \
+    PIP_DEFAULT_TIMEOUT=100
 
-RUN apt-get update && \
-    apt-get install -y --no-install-recommends \
-      gcc \
-      python3-dev \
-      libpq-dev \
-    && rm -rf /var/lib/apt/lists/* \
-    && apt-get clean
+# Instalar dependencias del sistema
+RUN apt-get update \
+    && apt-get install -y --no-install-recommends \
+        curl \
+        postgresql-client \
+        libpq-dev \
+        gcc \
+        python3-dev \
+    && rm -rf /var/lib/apt/lists/*
 
-RUN useradd --create-home $USER
+# Crear y establecer el directorio de trabajo
+WORKDIR /app
 
-WORKDIR $APP_HOME
-
+# Copiar requirements.txt
 COPY requirements.txt .
-RUN pip install --no-cache-dir -r requirements.txt
 
-FROM python:3.11-slim-bookworm
+# Instalar dependencias de Python
+RUN pip install -r requirements.txt
 
-ENV PYTHONDONTWRITEBYTECODE=1 \
-    PYTHONUNBUFFERED=1 \
-    APP_HOME=/app \
-    USER=appuser \
-    DATA_DIR=/data
+# Copiar el código de la aplicación
+COPY . .
 
-RUN useradd --create-home $USER
-
-RUN mkdir -p $APP_HOME $DATA_DIR && \
-    chown -R $USER:$USER $APP_HOME $DATA_DIR
-
-WORKDIR $APP_HOME
-
-COPY --from=builder /usr/local/lib/python3.11/site-packages/ /usr/local/lib/python3.11/site-packages/
-COPY --from=builder /usr/local/bin/ /usr/local/bin/
-
-COPY --chown=$USER:$USER . .
-
-USER $USER
-
+# Exponer el puerto
 EXPOSE 8000
 
-HEALTHCHECK --interval=30s --timeout=30s --start-period=5s --retries=3 \ 
-  CMD python -c "import requests; requests.get('http://localhost:8000/health')" || exit 1
+# Copiar y hacer ejecutable el script de entrada
+COPY docker-entrypoint.sh /usr/local/bin/
+RUN chmod +x /usr/local/bin/docker-entrypoint.sh
 
-COPY --chown=$USER:$USER docker-entrypoint.sh /
-RUN chmod +x /docker-entrypoint.sh
-
-ENTRYPOINT ["/docker-entrypoint.sh"]
+# Establecer el punto de entrada
+ENTRYPOINT ["docker-entrypoint.sh"]
