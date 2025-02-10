@@ -8,6 +8,8 @@ This is a simple application to be used in the technical test of DevOps.
 ### Prerequisites
 
 - Python 3.11.3
+- PostgreSQL 17.2
+- Docker and Docker Compose.
 
 ### Installation with Docker
 To execute the application with docker, ensure you have docker and docker compose installed.
@@ -16,6 +18,10 @@ To execute the application with docker, ensure you have docker and docker compos
 ```bash
 DJANGO_SECRET_KEY=your_secret_key
 DATABASE_NAME=your_database_name
+DATABASE_USER=your_database_user
+DATABASE_PASSWORD=your_database_password
+DATABASE_HOST=your_database_host
+DATABASE_PORT=your_database_port
 ```
 
 2. Build and run the container:
@@ -30,38 +36,19 @@ docker-compose up --build
 docker-compose down
 ```
 
-#### Notes about Docker
-- The database SQLite is stored in a volume, so it will persist even after the container is stopped.
-- The application include healthcheck to ensure the container is running.
-- The container exposes port 8000.
-- Utilize multi-stage build to reduce the final image size.
-
-### Installation
-
-Clone this repo.
-
-```bash
-git clone https://bitbucket.org/devsu/demo-devops-python.git
-```
-
-Install dependencies.
-
-```bash
-pip install -r requirements.txt
-```
-
-Migrate database
-
-```bash
-py manage.py makemigrations
-py manage.py migrate
-```
-
 ### Database
 
-The database is generated as a file in the main path when the project is first run, and its name is `db.sqlite3`.
+The project uses PostgreSQL as the database.
 
-Consider giving access permissions to the file for proper functioning.
+### Development
+For format the code, you can use the following command:
+```bash
+./format_code.sh
+```
+
+This script will install and execute:
+- Black to format the code.
+- Isort to sort the imports.
 
 ## Usage
 
@@ -79,9 +66,6 @@ py manage.py runserver
 
 Open http://localhost:8000/api/ with your browser to see the result.
 
-### Features
-
-These services can perform,
 
 #### Create User
 
