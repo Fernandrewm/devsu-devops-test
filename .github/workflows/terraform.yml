@@ -67,6 +67,8 @@ jobs:
         echo "::group::Terraform Plan"
         terraform plan -no-color -out=tfplan 2>&1 | tee plan.txt
         echo "::endgroup::"
+      env:
+        TF_VAR_database_password: ${{ secrets.DATABASE_PASSWORD }}
 
     - name: Update Pull Request
       if: github.event_name == 'pull_request'
@@ -106,6 +108,8 @@ jobs:
         echo "::group::Terraform Plan"
         terraform plan -no-color -out=tfplan
         echo "::endgroup::"
+      env:
+        TF_VAR_database_password: ${{ secrets.DATABASE_PASSWORD }}
 
     - name: Terraform Apply
       if: github.ref == 'refs/heads/main' && (github.event_name == 'push' || github.event_name == 'workflow_dispatch')
@@ -113,3 +117,5 @@ jobs:
         echo "::group::Terraform Apply"
         terraform apply -auto-approve tfplan
         echo "::endgroup::"
+      env:
+        TF_VAR_database_password: ${{ secrets.DATABASE_PASSWORD }}
