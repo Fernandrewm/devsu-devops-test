@@ -15,6 +15,8 @@ spec:
       labels:
         app: devsu-demo
     spec:
+      securityContext:
+        fsGroup: 1000
       initContainers:
       - name: init-db
         image: fernandre/devsu-demo:latest
@@ -28,6 +30,9 @@ spec:
             name: devsu-demo-config
         - secretRef:
             name: devsu-demo-secrets
+        securityContext:
+          runAsUser: 1000
+          runAsGroup: 1000
       containers:
       - name: devsu-demo
         image: fernandre/devsu-demo:latest
@@ -45,6 +50,9 @@ spec:
             name: devsu-demo-config
         - secretRef:
             name: devsu-demo-secrets
+        securityContext:
+          runAsUser: 1000
+          runAsGroup: 1000
         livenessProbe:
           httpGet:
             path: /api/
