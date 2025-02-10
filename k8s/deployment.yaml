@@ -17,7 +17,7 @@ spec:
     spec:
       containers:
       - name: devsu-demo
-        image: fernandosg88/devsu-demo:latest
+        image: fernandre/devsu-demo:latest
         ports:
         - containerPort: 8000
         envFrom:
