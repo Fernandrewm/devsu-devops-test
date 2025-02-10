@@ -3,5 +3,5 @@ kind: ConfigMap
 metadata:
   name: devsu-demo-config
   namespace: devsu-demo-ns
-stringData:
+data:
   DATABASE_NAME: ${DATABASE_NAME} 
