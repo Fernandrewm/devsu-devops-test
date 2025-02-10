@@ -2,12 +2,19 @@
 set -e
 
 DB_NAME=$(echo $DATABASE_NAME | tr -d "'")
+DATA_DIR=${DATA_DIR:-"/app/data"}
+APP_HOME=${APP_HOME:-"/app"}
+
+mkdir -p $DATA_DIR
+chmod 755 $DATA_DIR
 
 sleep 5
 
 if [ ! -f "$DATA_DIR/db.sqlite3" ]; then
   echo "Initializing database..."
-  ln -sf $DATA_DIR/$DB_NAME $APP_HOME/$DB_NAME
+  touch "$DATA_DIR/$DB_NAME"
+  chmod 644 "$DATA_DIR/$DB_NAME"
+  ln -sf "$DATA_DIR/$DB_NAME" "$APP_HOME/$DB_NAME"
   python manage.py makemigrations
   python manage.py migrate
 fi
