@@ -24,7 +24,7 @@ This projects contains Terraform code to create a fully functional Amazon EKS (E
 
 ### Node Group
 - Creates a managed node group with:
-  - ARM-based instances (t4g.medium)
+  - Instances x86_64 (t3.medium)
   - Auto-scaling configuration (min: 2, desired: 2, max: 3 nodes)
   - 20GB disk size per node
   - Deployed in private subnets
@@ -34,6 +34,13 @@ This projects contains Terraform code to create a fully functional Amazon EKS (E
   - EC2 Container Registry read access
   - SSM access
   - S3 access policy
+
+### Database RDS
+- Instance PostgreSQL 17.2
+- Deployed in private subnets
+- Security group configured to allow access from the EKS cluster
+- Automatic backup enabled
+- Storage GP3 encrypted
 
 ### Add-ons
 - Installs AWS Load Balancer Controller using Helm
@@ -49,6 +56,7 @@ This projects contains Terraform code to create a fully functional Amazon EKS (E
 - `eks`: Manaes the EKS cluster and its IAM roles
 - `eks-node-group`: Handles the EKS worker nodes configuration
 - `eks-add-ons`: Manages cluster add-ons and their IAM configurations
+- `rds`: Manages the RDS instance
 
 ## Ingress Architecture
 - AWS Application Load Balancer (ALB) as the external entry point
@@ -56,9 +64,6 @@ This projects contains Terraform code to create a fully functional Amazon EKS (E
 - Two-tier ingress setup:
   - ALB Ingress -> Nginx Ingress Controller
   - Nginx Ingress -> Backend Services
-- Sample applications provided to test ingress routing:
-  - Blue/Green application (/blue and /green paths)
-  - Orange/Purple application (/orange and /purple paths)
 
 ## Security Features
 - Private subnets for worker nodes
@@ -73,14 +78,14 @@ All resources are tagged with:
 - Environment (test)
 - Terraform managed indicator
 
-## Importante Notes
-- ***This is a test project to learn how to create a EKS cluster using Terraform, it is not intended to be used as a production cluster***
-- The cluster uses ARM-based instances for cost optimization
+## Important Notes
+- The cluster uses x86_64 for max compatibility.
 - NAT Gateway is deployed in the first public subnet.
 - Load Balancer Controller is installed for mananing AWS ALB/NLB.
 - Nginx Ingress Controller is deployed with ClusterIP service type.
 - ALB Ingress is configured to route traffic to Nginx Ingress Controller.
 - All necessary networking componentes are properly configured for cluster communication.
+- Database configured to allow access from the EKS cluster.
 
 
 ## References
