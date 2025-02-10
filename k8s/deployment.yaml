@@ -1,0 +1,86 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: devsu-demo
+  namespace: devsu-demo-ns
+  labels:
+    app: devsu-demo
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: devsu-demo
+  template:
+    metadata:
+      labels:
+        app: devsu-demo
+    spec:
+      securityContext:
+        fsGroup: 1000
+      initContainers:
+      - name: init-db
+        image: fernandre/devsu-demo:latest
+        command: ["/bin/sh", "-c"]
+        args:
+        - |
+          echo "Waiting for database connection..."
+          cd /app
+          export DJANGO_SETTINGS_MODULE=demo.settings
+          export DJANGO_ENV=production
+          python manage.py migrate --database default
+        envFrom:
+        - configMapRef:
+            name: devsu-demo-config
+        - secretRef:
+            name: devsu-demo-secrets
+        securityContext:
+          runAsUser: 1000
+          runAsGroup: 1000
+        volumeMounts:
+        - name: tmp-volume
+          mountPath: /tmp
+        - name: db-volume
+          mountPath: /app/data
+      containers:
+      - name: devsu-demo
+        image: fernandre/devsu-demo:latest
+        workingDir: /app
+        ports:
+        - containerPort: 8000
+        resources:
+          requests:
+            cpu: "100m"
+            memory: "128Mi"
+          limits:
+            cpu: "200m"
+            memory: "256Mi"
+        envFrom:
+        - configMapRef:
+            name: devsu-demo-config
+        - secretRef:
+            name: devsu-demo-secrets
+        securityContext:
+          runAsUser: 1000
+          runAsGroup: 1000
+        volumeMounts:
+        - name: tmp-volume
+          mountPath: /tmp
+        - name: db-volume
+          mountPath: /app/data
+        livenessProbe:
+          httpGet:
+            path: /api/users/
+            port: 8000
+          initialDelaySeconds: 30
+          periodSeconds: 30
+        readinessProbe:
+          httpGet:
+            path: /api/users/
+            port: 8000
+          initialDelaySeconds: 30
+          periodSeconds: 30
+      volumes:
+      - name: tmp-volume
+        emptyDir: {}
+      - name: db-volume
+        emptyDir: {} 

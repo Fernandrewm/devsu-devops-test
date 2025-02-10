@@ -1,15 +1,40 @@
 version: '3.8'
 
 services:
+  db:
+    image: postgres:16.3
+    env_file:
+      - .env
+    environment:
+      - POSTGRES_DB=${DATABASE_NAME}
+      - POSTGRES_USER=${DATABASE_USER}
+      - POSTGRES_PASSWORD=${DATABASE_PASSWORD}
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${DATABASE_USER} -d ${DATABASE_NAME}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
   web:
     build: .
+    env_file:
+      - .env
     ports:
       - "8000:8000"
     environment:
       - DJANGO_SECRET_KEY=${DJANGO_SECRET_KEY}
       - DATABASE_NAME=${DATABASE_NAME}
-    volumes:
-      - sqlite_data:/data
+      - DATABASE_USER=${DATABASE_USER}
+      - DATABASE_PASSWORD=${DATABASE_PASSWORD}
+      - DATABASE_HOST=db
+      - DATABASE_PORT=5432
+    depends_on:
+      db:
+        condition: service_healthy
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:8000/api/"]
       interval: 30s
@@ -18,4 +43,4 @@ services:
       start_period: 5s
 
 volumes:
-  sqlite_data:
+  postgres_data:

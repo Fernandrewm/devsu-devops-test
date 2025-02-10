@@ -1,15 +1,12 @@
 #!/bin/bash
 
-# Instalar herramientas de formateo
-echo "Instalando herramientas..."
+echo "Installing tools..."
 pip install black isort
 
-# Ordenar imports
-echo "Ordenando imports..."
+echo "Sorting imports..."
 isort api/ demo/ --profile black --line-length 120
 
-# Formatear código
-echo "Formateando código..."
+echo "Formatting code..."
 black --line-length 120 api/ demo/
 
-echo "¡Formateo completado!" 
+echo "Formatting completed!" 

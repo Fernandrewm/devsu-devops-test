@@ -9,8 +9,8 @@ on:
     branches: [ "main" ]
     paths:
       - 'devsu-demo-devops-python/**'
+  workflow_dispatch:
 
-# Agregamos los permisos necesarios
 permissions:
   contents: read
   pull-requests: write
@@ -40,13 +40,11 @@ jobs:
       working-directory: ./devsu-demo-devops-python
       run: |
         echo "DJANGO_SECRET_KEY=${{ secrets.DJANGO_SECRET_KEY }}" >> .env
-        echo "DATABASE_NAME=${{ secrets.DATABASE_NAME }}" >> .env
         
     - name: Run tests with coverage
       working-directory: ./devsu-demo-devops-python
       env:
         DJANGO_SECRET_KEY: ${{ secrets.DJANGO_SECRET_KEY }}
-        DATABASE_NAME: ${{ secrets.DATABASE_NAME }}
       run: |
         coverage run manage.py test
         coverage report > coverage_report.txt
@@ -110,13 +108,11 @@ jobs:
       working-directory: ./devsu-demo-devops-python
       run: |
         echo "DJANGO_SECRET_KEY=${{ secrets.DJANGO_SECRET_KEY }}" >> .env
-        echo "DATABASE_NAME=${{ secrets.DATABASE_NAME }}" >> .env
         
     - name: Run pylint
       working-directory: ./devsu-demo-devops-python
       env:
         DJANGO_SECRET_KEY: ${{ secrets.DJANGO_SECRET_KEY }}
-        DATABASE_NAME: ${{ secrets.DATABASE_NAME }}
       run: |
         pylint --load-plugins=pylint_django \
                --django-settings-module=demo.settings \
@@ -161,6 +157,8 @@ jobs:
         labels: ${{ steps.meta.outputs.labels }}
         cache-from: type=gha
         cache-to: type=gha,mode=max
+        build-args: |
+          DJANGO_SECRET_KEY=${{ secrets.DJANGO_SECRET_KEY }}
     
     - name: Run Trivy vulnerability scanner
       uses: aquasecurity/trivy-action@master
@@ -170,3 +168,52 @@ jobs:
         ignore-unfixed: true
         vuln-type: 'os,library'
         severity: 'CRITICAL,HIGH'
+
+  deploy:
+    name: Deploy to Kubernetes
+    needs: build-and-push
+    runs-on: ubuntu-latest
+    #if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Configure AWS Credentials
+      uses: aws-actions/configure-aws-credentials@v4
+      with:
+        aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+        aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+        aws-region: us-west-2
+    
+    - name: Install kubectl
+      uses: azure/setup-kubectl@v3
+      
+    - name: Set up kubeconfig
+      run: |
+        mkdir -p $HOME/.kube
+        echo "${{ secrets.KUBECONFIG }}" > $HOME/.kube/config
+        chmod 600 $HOME/.kube/config
+        
+    - name: Update Kubernetes manifests
+      run: |
+        cd k8s
+        sed -i "s|\${DATABASE_NAME}|'${{ secrets.DATABASE_NAME }}'|g" configmap.yaml
+        sed -i "s|\${DATABASE_USER}|'${{ secrets.DATABASE_USER }}'|g" configmap.yaml
+        sed -i "s|\${DATABASE_HOST}|'${{ secrets.DATABASE_HOST }}'|g" configmap.yaml
+        sed -i "s|\${DATABASE_PORT}|'${{ secrets.DATABASE_PORT }}'|g" configmap.yaml
+        sed -i "s|\${DJANGO_SECRET_KEY}|${{ secrets.DJANGO_SECRET_KEY }}|g" secret.yaml
+        sed -i "s|\${DATABASE_PASSWORD}|${{ secrets.DATABASE_PASSWORD }}|g" secret.yaml
+        
+    - name: Deploy to Kubernetes
+      run: |
+        kubectl apply -f k8s/namespace.yaml
+        kubectl apply -f k8s/configmap.yaml
+        kubectl apply -f k8s/secret.yaml
+        kubectl apply -f k8s/deployment.yaml
+        kubectl apply -f k8s/service.yaml
+        kubectl apply -f k8s/ingress.yaml
+        kubectl apply -f k8s/hpa.yaml
+        
+    - name: Verify deployment
+      run: |
+        kubectl -n devsu-demo-ns rollout status deployment/devsu-demo --timeout=180s

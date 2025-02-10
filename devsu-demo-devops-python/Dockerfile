@@ -1,54 +1,40 @@
-FROM python:3.11-slim-bookworm as builder
+FROM python:3.11-slim
 
-ENV PYTHONDONTWRITEBYTECODE=1 \
-    PYTHONUNBUFFERED=1 \
-    APP_HOME=/app \
-    USER=appuser \
-    DATA_DIR=/data
+ARG DJANGO_SECRET_KEY
 
-RUN apt-get update && \
-    apt-get install -y --no-install-recommends \
-      gcc \
-      python3-dev \
-      libpq-dev \
+ENV PYTHONUNBUFFERED=1 \
+    PYTHONDONTWRITEBYTECODE=1 \
+    PIP_NO_CACHE_DIR=off \
+    PIP_DISABLE_PIP_VERSION_CHECK=on \
+    PIP_DEFAULT_TIMEOUT=100 \
+    DJANGO_SECRET_KEY=${DJANGO_SECRET_KEY}
+
+RUN apt-get update \
+    && apt-get install -y --no-install-recommends \
+        curl \
+        postgresql-client \
+        libpq-dev \
+        gcc \
+        python3-dev \
     && rm -rf /var/lib/apt/lists/* \
     && apt-get clean
 
-RUN useradd --create-home $USER
+WORKDIR /app
 
-WORKDIR $APP_HOME
+RUN groupadd -r django && useradd -r -g django django \
+    && chown -R django:django /app
 
-COPY requirements.txt .
+COPY --chown=django:django requirements.txt .
+
 RUN pip install --no-cache-dir -r requirements.txt
 
-FROM python:3.11-slim-bookworm
-
-ENV PYTHONDONTWRITEBYTECODE=1 \
-    PYTHONUNBUFFERED=1 \
-    APP_HOME=/app \
-    USER=appuser \
-    DATA_DIR=/data
-
-RUN useradd --create-home $USER
-
-RUN mkdir -p $APP_HOME $DATA_DIR && \
-    chown -R $USER:$USER $APP_HOME $DATA_DIR
-
-WORKDIR $APP_HOME
-
-COPY --from=builder /usr/local/lib/python3.11/site-packages/ /usr/local/lib/python3.11/site-packages/
-COPY --from=builder /usr/local/bin/ /usr/local/bin/
-
-COPY --chown=$USER:$USER . .
-
-USER $USER
+COPY --chown=django:django . .
 
 EXPOSE 8000
 
-HEALTHCHECK --interval=30s --timeout=30s --start-period=5s --retries=3 \ 
-  CMD python -c "import requests; requests.get('http://localhost:8000/health')" || exit 1
+USER django
 
-COPY --chown=$USER:$USER docker-entrypoint.sh /
-RUN chmod +x /docker-entrypoint.sh
+COPY --chown=django:django docker-entrypoint.sh /usr/local/bin/
+RUN chmod +x /usr/local/bin/docker-entrypoint.sh
 
-ENTRYPOINT ["/docker-entrypoint.sh"]
+ENTRYPOINT ["docker-entrypoint.sh"]

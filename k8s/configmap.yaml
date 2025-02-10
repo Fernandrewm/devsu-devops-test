@@ -1,0 +1,14 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: devsu-demo-config
+  namespace: devsu-demo-ns
+data:
+  DATABASE_NAME: ${DATABASE_NAME}
+  DATABASE_USER: ${DATABASE_USER}
+  DATABASE_HOST: ${DATABASE_HOST}
+  DATABASE_PORT: ${DATABASE_PORT}
+  DATA_DIR: "/app/data"
+  APP_HOME: "/app"
+  DJANGO_DEBUG: "False"
+  DJANGO_ALLOWED_HOSTS: "*"
