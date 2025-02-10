@@ -9,12 +9,15 @@ mkdir -p $DATA_DIR
 
 sleep 5
 
+cd $APP_HOME
+
 if [ ! -f "$DATA_DIR/db.sqlite3" ]; then
   echo "Initializing database..."
   touch "$DATA_DIR/$DB_NAME"
-  ln -sf "$DATA_DIR/$DB_NAME" "$APP_HOME/$DB_NAME"
+  export DATABASE_NAME="$DATA_DIR/$DB_NAME"
   python manage.py makemigrations
   python manage.py migrate
 fi
 
+export DATABASE_NAME="$DATA_DIR/$DB_NAME"
 exec python manage.py runserver 0.0.0.0:8000
