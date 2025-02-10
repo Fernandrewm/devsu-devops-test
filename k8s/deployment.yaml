@@ -24,7 +24,10 @@ spec:
         args:
         - |
           echo "Waiting for database connection..."
-          python manage.py migrate
+          cd /app
+          export DJANGO_SETTINGS_MODULE=demo.settings
+          export DJANGO_ENV=production
+          python manage.py migrate --database default
         envFrom:
         - configMapRef:
             name: devsu-demo-config
@@ -36,6 +39,7 @@ spec:
       containers:
       - name: devsu-demo
         image: fernandre/devsu-demo:latest
+        workingDir: /app
         ports:
         - containerPort: 8000
         resources:
