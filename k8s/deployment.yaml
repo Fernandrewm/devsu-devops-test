@@ -36,6 +36,9 @@ spec:
         securityContext:
           runAsUser: 1000
           runAsGroup: 1000
+        volumeMounts:
+        - name: tmp-volume
+          mountPath: /tmp
       containers:
       - name: devsu-demo
         image: fernandre/devsu-demo:latest
@@ -57,6 +60,9 @@ spec:
         securityContext:
           runAsUser: 1000
           runAsGroup: 1000
+        volumeMounts:
+        - name: tmp-volume
+          mountPath: /tmp
         livenessProbe:
           httpGet:
             path: /api/
@@ -68,4 +74,7 @@ spec:
             path: /api/
             port: 8000
           initialDelaySeconds: 30
-          periodSeconds: 30 
+          periodSeconds: 30
+      volumes:
+      - name: tmp-volume
+        emptyDir: {} 
