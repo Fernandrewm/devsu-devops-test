@@ -10,7 +10,6 @@ on:
     paths:
       - 'devsu-demo-devops-python/**'
 
-# Agregamos los permisos necesarios
 permissions:
   contents: read
   pull-requests: write
@@ -200,7 +199,7 @@ jobs:
         sed -i "s|\${DATABASE_NAME}|${{ secrets.DATABASE_NAME }}|g" configmap.yaml
         sed -i "s|\${DATABASE_USER}|${{ secrets.DATABASE_USER }}|g" configmap.yaml
         sed -i "s|\${DATABASE_HOST}|${{ secrets.DATABASE_HOST }}|g" configmap.yaml
-        sed -i "s|\${DATABASE_PORT}|${{ secrets.DATABASE_PORT }}|g" configmap.yaml
+        sed -i "s|\${DATABASE_PORT}|\"${{ secrets.DATABASE_PORT }}\"|g" configmap.yaml
         sed -i "s|\${DJANGO_SECRET_KEY}|${{ secrets.DJANGO_SECRET_KEY }}|g" secret.yaml
         sed -i "s|\${DATABASE_PASSWORD}|${{ secrets.DATABASE_PASSWORD }}|g" secret.yaml
         
