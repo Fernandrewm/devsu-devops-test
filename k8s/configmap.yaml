@@ -10,3 +10,5 @@ data:
   DATABASE_PORT: ${DATABASE_PORT}
   DATA_DIR: "/app/data"
   APP_HOME: "/app"
+  DJANGO_DEBUG: "False"
+  DJANGO_ALLOWED_HOSTS: "*"
