@@ -15,11 +15,39 @@ spec:
       labels:
         app: devsu-demo
     spec:
+      initContainers:
+      - name: init-db
+        image: fernandre/devsu-demo:latest
+        command: ["/bin/sh", "-c"]
+        args:
+        - |
+          mkdir -p /data
+          chmod 777 /data
+          if [ ! -f /data/db.sqlite3 ]; then
+            echo "Initializing database..."
+            cd /app
+            python manage.py migrate
+          fi
+        volumeMounts:
+        - name: sqlite-data
+          mountPath: /data
+        envFrom:
+        - configMapRef:
+            name: devsu-demo-config
+        - secretRef:
+            name: devsu-demo-secrets
       containers:
       - name: devsu-demo
         image: fernandre/devsu-demo:latest
         ports:
         - containerPort: 8000
+        resources:
+          requests:
+            cpu: "100m"
+            memory: "128Mi"
+          limits:
+            cpu: "200m"
+            memory: "256Mi"
         envFrom:
         - configMapRef:
             name: devsu-demo-config
@@ -28,17 +56,18 @@ spec:
         volumeMounts:
         - name: sqlite-data
           mountPath: /data
+          readOnly: true
         livenessProbe:
           httpGet:
             path: /api/
             port: 8000
-          initialDelaySeconds: 5
+          initialDelaySeconds: 30
           periodSeconds: 30
         readinessProbe:
           httpGet:
             path: /api/
             port: 8000
-          initialDelaySeconds: 5
+          initialDelaySeconds: 30
           periodSeconds: 30
       volumes:
       - name: sqlite-data
