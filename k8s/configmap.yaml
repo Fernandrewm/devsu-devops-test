@@ -1,0 +1,7 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: devsu-demo-config
+  namespace: devsu-demo-ns
+data:
+  DATABASE_NAME: ${DATABASE_NAME} 

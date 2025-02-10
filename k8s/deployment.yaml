@@ -1,0 +1,46 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: devsu-demo
+  namespace: devsu-demo-ns
+  labels:
+    app: devsu-demo
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: devsu-demo
+  template:
+    metadata:
+      labels:
+        app: devsu-demo
+    spec:
+      containers:
+      - name: devsu-demo
+        image: fernandosg88/devsu-demo:latest
+        ports:
+        - containerPort: 8000
+        envFrom:
+        - configMapRef:
+            name: devsu-demo-config
+        - secretRef:
+            name: devsu-demo-secrets
+        volumeMounts:
+        - name: sqlite-data
+          mountPath: /data
+        livenessProbe:
+          httpGet:
+            path: /api/
+            port: 8000
+          initialDelaySeconds: 5
+          periodSeconds: 30
+        readinessProbe:
+          httpGet:
+            path: /api/
+            port: 8000
+          initialDelaySeconds: 5
+          periodSeconds: 30
+      volumes:
+      - name: sqlite-data
+        persistentVolumeClaim:
+          claimName: sqlite-pvc 
