@@ -21,16 +21,8 @@ spec:
         command: ["/bin/sh", "-c"]
         args:
         - |
-          mkdir -p /data
-          chmod 777 /data
-          if [ ! -f /data/db.sqlite3 ]; then
-            echo "Initializing database..."
-            cd /app
-            python manage.py migrate
-          fi
-        volumeMounts:
-        - name: sqlite-data
-          mountPath: /data
+          echo "Waiting for database connection..."
+          python manage.py migrate
         envFrom:
         - configMapRef:
             name: devsu-demo-config
@@ -53,10 +45,6 @@ spec:
             name: devsu-demo-config
         - secretRef:
             name: devsu-demo-secrets
-        volumeMounts:
-        - name: sqlite-data
-          mountPath: /data
-          readOnly: true
         livenessProbe:
           httpGet:
             path: /api/

@@ -40,13 +40,11 @@ jobs:
       working-directory: ./devsu-demo-devops-python
       run: |
         echo "DJANGO_SECRET_KEY=${{ secrets.DJANGO_SECRET_KEY }}" >> .env
-        echo "DATABASE_NAME=${{ secrets.DATABASE_NAME }}" >> .env
         
     - name: Run tests with coverage
       working-directory: ./devsu-demo-devops-python
       env:
         DJANGO_SECRET_KEY: ${{ secrets.DJANGO_SECRET_KEY }}
-        DATABASE_NAME: ${{ secrets.DATABASE_NAME }}
       run: |
         coverage run manage.py test
         coverage report > coverage_report.txt
@@ -110,13 +108,11 @@ jobs:
       working-directory: ./devsu-demo-devops-python
       run: |
         echo "DJANGO_SECRET_KEY=${{ secrets.DJANGO_SECRET_KEY }}" >> .env
-        echo "DATABASE_NAME=${{ secrets.DATABASE_NAME }}" >> .env
         
     - name: Run pylint
       working-directory: ./devsu-demo-devops-python
       env:
         DJANGO_SECRET_KEY: ${{ secrets.DJANGO_SECRET_KEY }}
-        DATABASE_NAME: ${{ secrets.DATABASE_NAME }}
       run: |
         pylint --load-plugins=pylint_django \
                --django-settings-module=demo.settings \
@@ -161,6 +157,8 @@ jobs:
         labels: ${{ steps.meta.outputs.labels }}
         cache-from: type=gha
         cache-to: type=gha,mode=max
+        build-args: |
+          DJANGO_SECRET_KEY=${{ secrets.DJANGO_SECRET_KEY }}
     
     - name: Run Trivy vulnerability scanner
       uses: aquasecurity/trivy-action@master
@@ -200,12 +198,15 @@ jobs:
       run: |
         cd k8s
         sed -i "s|\${DATABASE_NAME}|${{ secrets.DATABASE_NAME }}|g" configmap.yaml
+        sed -i "s|\${DATABASE_USER}|${{ secrets.DATABASE_USER }}|g" configmap.yaml
+        sed -i "s|\${DATABASE_HOST}|${{ secrets.DATABASE_HOST }}|g" configmap.yaml
+        sed -i "s|\${DATABASE_PORT}|${{ secrets.DATABASE_PORT }}|g" configmap.yaml
         sed -i "s|\${DJANGO_SECRET_KEY}|${{ secrets.DJANGO_SECRET_KEY }}|g" secret.yaml
+        sed -i "s|\${DATABASE_PASSWORD}|${{ secrets.DATABASE_PASSWORD }}|g" secret.yaml
         
     - name: Deploy to Kubernetes
       run: |
         kubectl apply -f k8s/namespace.yaml
-        kubectl apply -f k8s/persistent-volume.yaml
         kubectl apply -f k8s/configmap.yaml
         kubectl apply -f k8s/secret.yaml
         kubectl apply -f k8s/deployment.yaml
