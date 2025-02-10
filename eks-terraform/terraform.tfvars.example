@@ -1,0 +1,4 @@
+# The password for the database must be provided through the TF_VAR_database_password environment variable
+# or through GitHub Actions secrets
+
+database_password = ""

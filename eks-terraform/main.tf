@@ -113,3 +113,21 @@ module "eks_addons" {
 
   depends_on = [module.eks, module.eks_node_group]
 }
+
+module "rds" {
+  source = "./modules/rds"
+
+  project_name          = local.project_name
+  vpc_id                = module.vpc.vpc_id
+  private_subnet_ids    = module.subnets.private_subnet_ids
+  eks_security_group_id = module.eks.cluster_security_group_id
+
+  database_name     = "devsudb"
+  database_username = "devsu"
+  database_password = var.database_password
+
+  instance_class = "db.t3.micro"
+  tags           = local.common_tags
+
+  depends_on = [module.vpc, module.subnets, module.eks]
+}
