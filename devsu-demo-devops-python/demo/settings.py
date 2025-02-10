@@ -138,6 +138,7 @@ STATIC_URL = "static/"
 
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
-# Configuración del directorio temporal
+# Configuration for the temporary directory and data directory
 TEMP_DIR = '/tmp'
 FILE_UPLOAD_TEMP_DIR = TEMP_DIR
+DATA_DIR = '/app/data'

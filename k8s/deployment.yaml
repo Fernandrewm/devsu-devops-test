@@ -39,6 +39,8 @@ spec:
         volumeMounts:
         - name: tmp-volume
           mountPath: /tmp
+        - name: db-volume
+          mountPath: /app/data
       containers:
       - name: devsu-demo
         image: fernandre/devsu-demo:latest
@@ -63,6 +65,8 @@ spec:
         volumeMounts:
         - name: tmp-volume
           mountPath: /tmp
+        - name: db-volume
+          mountPath: /app/data
         livenessProbe:
           httpGet:
             path: /api/
@@ -77,4 +81,6 @@ spec:
           periodSeconds: 30
       volumes:
       - name: tmp-volume
+        emptyDir: {}
+      - name: db-volume
         emptyDir: {} 
